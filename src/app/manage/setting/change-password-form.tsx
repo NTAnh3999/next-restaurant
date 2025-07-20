@@ -11,8 +11,17 @@ import {
 } from "@/schemaValidations/account.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { useChangePasswordMutation } from "@/queries/useAccount";
+import {
+  handleErrorApi,
+  setAccessTokenToLocalStorage,
+  setRefreshTokenToLocalStorage,
+} from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 export default function ChangePasswordForm() {
+  const changePasswordMutation = useChangePasswordMutation();
+
   const form = useForm<ChangePasswordBodyType>({
     resolver: zodResolver(ChangePasswordBody),
     defaultValues: {
@@ -21,10 +30,31 @@ export default function ChangePasswordForm() {
       confirmPassword: "",
     },
   });
+  const onSubmit = async (data: ChangePasswordBodyType) => {
+    if (changePasswordMutation.isPending) return;
+    try {
+      const result = await changePasswordMutation.mutateAsync(data);
+      setAccessTokenToLocalStorage(result.payload.data.accessToken);
+      setRefreshTokenToLocalStorage(result.payload.data.refreshToken);
+      toast({
+        description: result.payload.message,
+      });
+    } catch (error) {
+      handleErrorApi({
+        error,
+        setError: form.setError,
+      });
+    }
+  };
+  const reset = () => {
+    form.reset();
+  };
 
   return (
     <Form {...form}>
       <form
+        onSubmit={form.handleSubmit(onSubmit, (err) => console.warn(err))}
+        onReset={reset}
         noValidate
         className="grid auto-rows-max items-start gap-4 md:gap-8"
       >

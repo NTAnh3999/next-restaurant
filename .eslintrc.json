@@ -3,5 +3,17 @@
     "next/core-web-vitals",
     "next/typescript",
     "plugin:@tanstack/eslint-plugin-query/recommended"
-  ]
+  ],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "args": "after-used",
+        "ignoreRestSiblings": true,
+        "argsIgnorePattern": "^_" // cho phép args bắt đầu bằng _ không báo
+      }
+    ]
+  }
 }

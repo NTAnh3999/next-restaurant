@@ -75,8 +75,6 @@ export const checkAndRefreshToken = async (param?: {
     exp: number;
     iat: number;
   };
-  console.log("decodedAccessToken", decodedAccessToken);
-  console.log("decodedRefreshToken", decodedRefreshToken);
   // Thời điểm hết hạn của token là tính theo epoch time (s)
   // Còn khi các bạn dùng cú pháp new Date().getTime() thì nó sẽ trả về epoch time (ms)
   const now = Math.round(new Date().getTime() / 1000);
@@ -84,17 +82,16 @@ export const checkAndRefreshToken = async (param?: {
   // trường hợp refresh token hết hạn thì không xử lý nữa
   if (decodedRefreshToken.exp <= now) return;
   // Ví dụ access token của chúng ta có thời gian hết hạn là 10s
-  // thì mình sẽ kiểm tra còn 1/3 thời gian (3s) thì mình sẽ cho refresh token lại
+  // thì mình sẽ kiểm tra còn 1/5 thời gian (2s) thì mình sẽ cho refresh token lại
   // Thời gian còn lại sẽ tính dựa trên công thức: decodedAccessToken.exp - now
   // Thời gian hết hạn của access token dựa trên công thức: decodedAccessToken.exp - decodedAccessToken.iat
   if (
     decodedAccessToken.exp - now <
-    decodedAccessToken.exp - decodedAccessToken.iat + 5
+    (decodedAccessToken.exp - decodedAccessToken.iat) / 5
   ) {
     // Gọi API refresh token
     try {
       const res = await authApiRequest.refreshToken();
-      console.log("Res: ", res);
       setAccessTokenToLocalStorage(res.payload.data.accessToken);
       setRefreshTokenToLocalStorage(res.payload.data.refreshToken);
       if (param?.onSuccess) param.onSuccess();
